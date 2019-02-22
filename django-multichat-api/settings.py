@@ -52,6 +52,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -148,7 +149,9 @@ REST_FRAMEWORK = {
 
 #Whitelist react
 CORS_ORIGIN_WHITELIST = (
-    'localhost:1234',
+    'localhost:3000',
+    '10.0.0.5:3000',
+    'localhost:1234'
 )
 
 #Set email to be required by all users

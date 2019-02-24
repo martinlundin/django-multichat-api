@@ -1,8 +1,16 @@
 from rest_framework import generics
 from rest_framework import permissions
-
 from . import models
 from . import serializers
+
+
+#Is this the right place to add permission classes?
+class IsOwnerOrReadOnly(permissions.BasePermission):
+    def has_object_permission(self, request, view, obj):
+        if request.method in permissions.SAFE_METHODS:
+            return True
+
+        return str(obj.uuid) == str(request.user)
 
 
 class UsernListView(generics.ListAPIView):
@@ -15,25 +23,7 @@ class UsernListView(generics.ListAPIView):
         return queryset
 
 
-class UsernCreateView(generics.CreateAPIView):
-    queryset = models.Usern.objects.all()
-    serializer_class = serializers.UsernCreateSerializer
-    permission_classes = (permissions.AllowAny,)
-
-
-class UsernDetailView(generics.RetrieveAPIView):
+class UsernDetailView(generics.RetrieveUpdateDestroyAPIView):
     queryset = models.Usern.objects.all()
     serializer_class = serializers.UsernSerializer
-    permission_classes = (permissions.AllowAny,)
-
-
-class UsernUpdateView(generics.UpdateAPIView):
-    queryset = models.Usern.objects.all()
-    serializer_class = serializers.UsernSerializer
-    permission_classes = (permissions.IsAuthenticated,)
-
-
-class UsernDeleteView(generics.DestroyAPIView):
-    queryset = models.Usern.objects.all()
-    serializer_class = serializers.UsernSerializer
-    permission_classes = (permissions.IsAuthenticated,)
+    permission_classes = (permissions.IsAuthenticatedOrReadOnly, IsOwnerOrReadOnly)

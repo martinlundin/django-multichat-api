@@ -1,17 +1,16 @@
 from rest_framework import serializers
 from . import models
-import time
-
+from rest_framework.authtoken.models import Token
 
 class UsernSerializer(serializers.ModelSerializer):
     class Meta:
         model = models.Usern
-        fields = ('uuid', 'name', 'image')
-        read_only_fields = ('uuid',)
+        fields = ('uuid', 'username', 'name', 'image')
+        read_only_fields = ('uuid', 'username')
 
 
-class UsernCreateSerializer(serializers.ModelSerializer):
+
+class TokenSerializer(serializers.ModelSerializer):
     class Meta:
-        model = models.Usern
-        fields = ('uuid', 'email', 'name', 'image')
-        read_only_fields = ('uuid',)
+        model = Token
+        fields = ('key', 'user')

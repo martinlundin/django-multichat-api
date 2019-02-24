@@ -5,7 +5,7 @@ from django.contrib.auth.models import AbstractUser
 
 
 def get_image_path(instance, filename):
-    return os.path.join('uploads/users', str(instance.id), filename)
+    return os.path.join('users', str(instance.uuid), filename)
 
 
 class Usern(AbstractUser):
@@ -14,4 +14,4 @@ class Usern(AbstractUser):
     image = models.ImageField(upload_to=get_image_path, blank=True, null=True)
 
     def __str__(self):
-        return self.email
+        return str(self.uuid)

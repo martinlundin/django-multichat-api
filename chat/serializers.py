@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from chat.models import Chat, Message, get_latest_messages
+from chat.models import Chat, Message, get_latest_messages, get_latest_timestamp
 
 
 class ProfileSerializer(serializers.StringRelatedField):
@@ -14,22 +14,30 @@ class MessagesSerializer(serializers.ModelSerializer):
         fields = ('sender', 'content', 'timestamp')
 
 
-class MessageSerializer(serializers.StringRelatedField):
-    def to_internal_value(self, value):
-        return value
+class TimestampSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Message
+        fields = ('timestamp',)
+
 
 
 class ChatSerializer(serializers.ModelSerializer):
     participants = ProfileSerializer(many=True)
     messages = serializers.SerializerMethodField()
+    timestamp = serializers.SerializerMethodField()
 
     def get_messages(self, chat):
         qs = get_latest_messages(chat.uuid, 20)
         return MessagesSerializer(qs, many=True, read_only=True).data
 
+    #Todo make this not stupid, and not nested
+    def get_timestamp(self, chat):
+        qs = get_latest_messages(chat.uuid, 1)
+        return TimestampSerializer(qs, many=True, read_only=True).data
+
     class Meta:
         model = Chat
-        fields = ('uuid', 'name', 'participants', 'messages')
+        fields = ('uuid', 'name', 'participants', 'messages', 'timestamp')
         read_only = ('uuid',)
 
     def create(self, validated_data):

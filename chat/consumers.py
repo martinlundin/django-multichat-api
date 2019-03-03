@@ -11,6 +11,7 @@ class ChatConsumer(WebsocketConsumer):
 
     def fetch_messages(self, data):
         #todo If logged in, fetch messages
+        #Todo add parameter to get more messages.
         messages = get_latest_messages(data['chatid'])
         content = {
             'command': 'messages',

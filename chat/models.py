@@ -8,6 +8,10 @@ def get_latest_messages(chatid, num=20):
     chat = get_object_or_404(Chat, uuid=chatid)
     return chat.messages.order_by('-timestamp').all()[:num]
 
+def get_latest_timestamp(chatid):
+    chat = get_object_or_404(Chat, uuid=chatid)
+    latest = chat.messages.order_by('-timestamp').all()[:1]
+    return latest
 
 def get_current_chat(chatid):
     return get_object_or_404(Chat, uuid=chatid)

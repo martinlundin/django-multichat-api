@@ -1,25 +1,26 @@
 from django.shortcuts import render, get_object_or_404
+from django.db.models import Prefetch
 from rest_framework import generics
 from rest_framework import permissions
-from chat.models import Chat
+from chat.models import Chat, Message
 from chat.models import Usern
 from .serializers import ChatSerializer, ChatDetailSerializer
 
 
+
+def get_latest_messages(chatid, num=20):
+    chat = get_object_or_404(Chat, uuid=chatid)
+    return chat.messages.order_by('-timestamp').all()[:num]
+
+
+def get_current_chat(chatid):
+    return get_object_or_404(Chat, uuid=chatid)
+
 #Todo IMPORTANT check if this is actually a participant, if it is return True. Also put it in a permission.py file and import
-#Fine for now, just because chat id is actually random, only the owner should find it through listing their own chats.
+#Fine for now, just because chatid is actually random, only the owner should find it through listing their own chats.
 class IsParticipant(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
         return True
-
-
-def get_last_10_messages(chatId):
-    chat = get_object_or_404(Chat, uuid=chatId)
-    return chat.messages.order_by('-timestamp').all()[:10]
-
-
-def get_current_chat(chatId):
-    return get_object_or_404(Chat, uuid=chatId)
 
 
 class ChatListView(generics.ListCreateAPIView):

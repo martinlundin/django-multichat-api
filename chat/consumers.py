@@ -2,9 +2,7 @@ from django.contrib.auth import get_user_model
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 import json
-from .models import Message, Chat
-from .views import get_last_10_messages, get_current_chat
-
+from .models import Message, Chat, get_latest_messages, get_current_chat
 
 User = get_user_model()
 
@@ -13,7 +11,7 @@ class ChatConsumer(WebsocketConsumer):
 
     def fetch_messages(self, data):
         #todo If logged in, fetch messages
-        messages = get_last_10_messages(data['chatId'])
+        messages = get_latest_messages(data['chatid'])
         content = {
             'command': 'messages',
             'messages': self.messages_to_json(messages)
@@ -27,7 +25,7 @@ class ChatConsumer(WebsocketConsumer):
         message = Message.objects.create(
             sender=user_contact,
             content=data['message'])
-        current_chat = get_current_chat(data['chatId'])
+        current_chat = get_current_chat(data['chatid'])
         current_chat.messages.add(message)
         current_chat.save()
         content = {
@@ -56,7 +54,7 @@ class ChatConsumer(WebsocketConsumer):
     }
 
     def connect(self):
-        self.room_name = self.scope['url_route']['kwargs']['room_name']
+        self.room_name = self.scope['url_route']['kwargs']['chatid']
         self.room_group_name = 'chat_%s' % self.room_name
         async_to_sync(self.channel_layer.group_add)(
             self.room_group_name,

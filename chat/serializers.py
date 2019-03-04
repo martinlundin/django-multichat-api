@@ -1,14 +1,12 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from chat.models import Chat, Message, get_latest_messages, get_latest_timestamp
-
-
-class ProfileSerializer(serializers.StringRelatedField):
-    def to_internal_value(self, value):
-        return value
+from users.serializers import ChatUsernSerializer
 
 
 class MessagesSerializer(serializers.ModelSerializer):
+    sender = ChatUsernSerializer(read_only=True)
+
     class Meta:
         model = Message
         fields = ('sender', 'content', 'timestamp')
@@ -20,19 +18,18 @@ class TimestampSerializer(serializers.ModelSerializer):
         fields = ('timestamp',)
 
 
-
 class ChatSerializer(serializers.ModelSerializer):
-    participants = ProfileSerializer(many=True)
+    participants = ChatUsernSerializer(many=True, read_only=True)
     messages = serializers.SerializerMethodField()
     timestamp = serializers.SerializerMethodField()
 
     def get_messages(self, chat):
-        qs = get_latest_messages(chat.uuid, 20)
+        qs = get_latest_messages(chat.uuid)
         return MessagesSerializer(qs, many=True, read_only=True).data
 
     #Todo make this not stupid, and not nested
     def get_timestamp(self, chat):
-        qs = get_latest_messages(chat.uuid, 1)
+        qs = get_latest_messages(chat.uuid, to_message=1)
         return TimestampSerializer(qs, many=True, read_only=True).data
 
     class Meta:
@@ -55,8 +52,9 @@ class ChatSerializer(serializers.ModelSerializer):
         else:
             raise ValidationError('You have to be one of the participants')
 
+
 class ChatDetailSerializer(serializers.ModelSerializer):
-    participants = ProfileSerializer(many=True)
+    participants = ChatUsernSerializer(many=True)
     messages = MessagesSerializer(many=True)
 
     class Meta:

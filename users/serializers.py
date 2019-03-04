@@ -4,6 +4,12 @@ from rest_framework.authtoken.models import Token
 from drf_extra_fields.fields import Base64ImageField
 
 
+class ChatUsernSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = models.Usern
+        fields = ('uuid', 'name', 'image')
+
+
 class UsernSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     class Meta:

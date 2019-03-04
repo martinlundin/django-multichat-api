@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 import json
-from .models import Message, Chat, get_latest_messages, get_current_chat
+from .models import Message, Chat, get_latest_messages, get_current_chat, is_participant_in_chat
 
 User = get_user_model()
 
@@ -10,9 +10,7 @@ User = get_user_model()
 class ChatConsumer(WebsocketConsumer):
 
     def fetch_messages(self, data):
-        #todo If logged in, fetch messages
-        #Todo add parameter to get more messages.
-        messages = get_latest_messages(data['chatid'])
+        messages = get_latest_messages(data['chatid'], data['fromMessage'], data['toMessage'])
         content = {
             'command': 'messages',
             'messages': self.messages_to_json(messages)
@@ -22,7 +20,7 @@ class ChatConsumer(WebsocketConsumer):
     def new_message(self, data):
 
         #Todo get from view request.
-        user_contact = "asd"
+        user_contact = data['sender']
         message = Message.objects.create(
             sender=user_contact,
             content=data['message'])
@@ -56,12 +54,19 @@ class ChatConsumer(WebsocketConsumer):
 
     def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['chatid']
+
+
+        #Check if chatid has user in it
+        is_participant_in_chat(self.room_name, self.scope['user'])
+
         self.room_group_name = 'chat_%s' % self.room_name
         async_to_sync(self.channel_layer.group_add)(
             self.room_group_name,
             self.channel_name
         )
         self.accept()
+
+
 
     def disconnect(self, close_code):
         async_to_sync(self.channel_layer.group_discard)(

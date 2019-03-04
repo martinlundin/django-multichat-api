@@ -7,15 +7,6 @@ from chat.models import Usern
 from .serializers import ChatSerializer, ChatDetailSerializer
 
 
-
-def get_latest_messages(chatid, num=20):
-    chat = get_object_or_404(Chat, uuid=chatid)
-    return chat.messages.order_by('-timestamp').all()[:num]
-
-
-def get_current_chat(chatid):
-    return get_object_or_404(Chat, uuid=chatid)
-
 #Todo IMPORTANT check if this is actually a participant, if it is return True. Also put it in a permission.py file and import
 #Fine for now, just because chatid is actually random, only the owner should find it through listing their own chats.
 class IsParticipant(permissions.BasePermission):

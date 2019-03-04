@@ -20,7 +20,7 @@ class ChatConsumer(WebsocketConsumer):
     def new_message(self, data):
 
         #Todo get from view request.
-        user_contact = data['sender']
+        user_contact = self.scope['user']
         message = Message.objects.create(
             sender=user_contact,
             content=data['message'])
@@ -39,10 +39,10 @@ class ChatConsumer(WebsocketConsumer):
             result.append(self.message_to_json(message))
         return result
 
+    #Todo this should be chat Message serializer
     def message_to_json(self, message):
         return {
-            'id': message.id,
-            'author': message.sender.user.email,
+            'sender': str(message.sender.uuid),
             'content': message.content,
             'timestamp': str(message.timestamp)
         }
@@ -55,18 +55,15 @@ class ChatConsumer(WebsocketConsumer):
     def connect(self):
         self.room_name = self.scope['url_route']['kwargs']['chatid']
 
-
-        #Check if chatid has user in it
-        is_participant_in_chat(self.room_name, self.scope['user'])
-
-        self.room_group_name = 'chat_%s' % self.room_name
-        async_to_sync(self.channel_layer.group_add)(
-            self.room_group_name,
-            self.channel_name
-        )
-        self.accept()
-
-
+        if(is_participant_in_chat(self.room_name, self.scope['user'].uuid)):
+            self.room_group_name = 'chat_%s' % self.room_name
+            async_to_sync(self.channel_layer.group_add)(
+                self.room_group_name,
+                self.channel_name
+            )
+            self.accept(self.scope['subprotocols'][0])
+        else:
+            self.close()
 
     def disconnect(self, close_code):
         async_to_sync(self.channel_layer.group_discard)(

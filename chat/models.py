@@ -21,9 +21,7 @@ def get_current_chat(chatid):
 
 def is_participant_in_chat(chatid, userid):
     chat = get_object_or_404(Chat, uuid=chatid)
-    test = chat.objects
-    #Check if userid is in participants
-    return False
+    return chat.participants.filter(uuid=userid).exists()
 
 class Message(models.Model):
     sender = models.ForeignKey(Usern, related_name='messages', on_delete=models.CASCADE)

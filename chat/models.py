@@ -4,18 +4,7 @@ import uuid as makeuuid
 from users.models import Usern
 
 
-def get_latest_messages(chatid, from_message=0, to_message=20):
-    chat = get_object_or_404(Chat, uuid=chatid)
-    return chat.messages.order_by('-timestamp').all()[from_message:to_message]
-
-
-def get_latest_timestamp(chatid):
-    chat = get_object_or_404(Chat, uuid=chatid)
-    latest = chat.messages.order_by('-timestamp').all()[:1]
-    return latest
-
-
-def get_current_chat(chatid):
+def get_chat_by_id(chatid):
     return get_object_or_404(Chat, uuid=chatid)
 
 
@@ -23,9 +12,19 @@ def is_participant_in_chat(chatid, userid):
     chat = get_object_or_404(Chat, uuid=chatid)
     return chat.participants.filter(uuid=userid).exists()
 
+
+class Content(models.Model):
+    text = models.TextField()
+    giphy = models.CharField(max_length=300)
+
+    def __str__(self):
+        #Todo should be different for all fields
+        return str(self.text)
+
+
 class Message(models.Model):
     sender = models.ForeignKey(Usern, related_name='messages', on_delete=models.CASCADE)
-    content = models.TextField()
+    content = models.ForeignKey(Content, on_delete=models.CASCADE)
     timestamp = models.DateTimeField(auto_now_add=True)
 
     def __str__(self):

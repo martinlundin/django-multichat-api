@@ -1,11 +1,36 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from chat.models import Chat, Message, get_latest_messages, get_latest_timestamp
+from chat.models import Chat, Message, Content
 from users.serializers import ChatUsernSerializer
+from django.shortcuts import get_object_or_404
 
 
-class MessagesSerializer(serializers.ModelSerializer):
+def get_latest_messages(chatid, from_message=0, to_message=20):
+    chat = get_object_or_404(Chat, uuid=chatid)
+    qs = chat.messages.order_by('-timestamp').all()[from_message:to_message]
+    return MessageSerializer(qs, many=True, read_only=True).data
+
+def save_message(user, content):
+    Message.objects.create(
+        sender=user,
+        content=content
+    )
+
+def get_latest_timestamp(chatid):
+    chat = get_object_or_404(Chat, uuid=chatid)
+    qs = chat.messages.order_by('-timestamp').all()[:1]
+    return TimestampSerializer(qs, many=True, read_only=True).data
+
+
+class ContentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Content
+        fields = ('text', 'giphy')
+
+
+class MessageSerializer(serializers.ModelSerializer):
     sender = ChatUsernSerializer(read_only=True)
+    content = ContentSerializer(read_only=True)
 
     class Meta:
         model = Message
@@ -13,6 +38,7 @@ class MessagesSerializer(serializers.ModelSerializer):
 
 
 class TimestampSerializer(serializers.ModelSerializer):
+    #Todo make this not stupid, it should return string of timestamp
     class Meta:
         model = Message
         fields = ('timestamp',)
@@ -24,13 +50,10 @@ class ChatSerializer(serializers.ModelSerializer):
     timestamp = serializers.SerializerMethodField()
 
     def get_messages(self, chat):
-        qs = get_latest_messages(chat.uuid)
-        return MessagesSerializer(qs, many=True, read_only=True).data
+        return get_latest_messages(chat.uuid)
 
-    #Todo make this not stupid, and not nested
     def get_timestamp(self, chat):
-        qs = get_latest_messages(chat.uuid, to_message=1)
-        return TimestampSerializer(qs, many=True, read_only=True).data
+        return get_latest_timestamp(chat.uuid)
 
     class Meta:
         model = Chat
@@ -55,7 +78,7 @@ class ChatSerializer(serializers.ModelSerializer):
 
 class ChatDetailSerializer(serializers.ModelSerializer):
     participants = ChatUsernSerializer(many=True)
-    messages = MessagesSerializer(many=True)
+    messages = MessageSerializer(many=True)
 
     class Meta:
         model = Chat

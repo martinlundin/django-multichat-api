@@ -20,10 +20,8 @@ class ChatListView(generics.ListCreateAPIView):
     permission_classes = (permissions.IsAuthenticated,)
 
     def get_queryset(self):
-        queryset = Chat.objects.all()
         uuid = self.request.user
-        if uuid is not None:
-            queryset = uuid.chats.all()
+        queryset = uuid.chats.all()
         return queryset
 
 

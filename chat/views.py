@@ -3,15 +3,16 @@ from django.db.models import Prefetch
 from rest_framework import generics
 from rest_framework import permissions
 from chat.models import Chat, Message
-from chat.models import Usern
+from chat.models import is_participant_in_chat
 from .serializers import ChatSerializer, ChatDetailSerializer
 
 
-#Todo IMPORTANT check if this is actually a participant, if it is return True. Also put it in a permission.py file and import
-#Fine for now, just because chatid is actually random, only the owner should find it through listing their own chats.
 class IsParticipant(permissions.BasePermission):
     def has_object_permission(self, request, view, obj):
-        return True
+        if(is_participant_in_chat(obj.uuid, request.user.uuid)):
+            return True
+        else:
+            return False
 
 
 class ChatListView(generics.ListCreateAPIView):

@@ -10,11 +10,21 @@ def get_latest_messages(chatid, from_message=0, to_message=20):
     qs = chat.messages.order_by('-timestamp').all()[from_message:to_message]
     return MessageSerializer(qs, many=True, read_only=True).data
 
-def save_message(user, content):
-    Message.objects.create(
-        sender=user,
+
+def save_message(sender, chat, data):
+    content = Content.objects.create(
+        text=data['content'].get('text', ""),
+        giphy=data['content'].get('giphy', ""),
+    )
+    message = Message.objects.create(
+        sender=sender,
         content=content
     )
+    chat.messages.add(message)
+    chat.save()
+
+    return MessageSerializer(message).data
+
 
 def get_latest_timestamp(chatid):
     chat = get_object_or_404(Chat, uuid=chatid)
@@ -25,7 +35,7 @@ def get_latest_timestamp(chatid):
 class ContentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Content
-        fields = ('text', 'giphy')
+        fields = '__all__'
 
 
 class MessageSerializer(serializers.ModelSerializer):
@@ -34,8 +44,14 @@ class MessageSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Message
-        fields = ('sender', 'content', 'timestamp')
+        fields = '__all__'
 
+    def create(self, validated_data):
+        """
+        Create and return a new `Snippet` instance, given the validated data.
+        """
+        print("asd")
+        return Message.objects.create(**validated_data)
 
 class TimestampSerializer(serializers.ModelSerializer):
     #Todo make this not stupid, it should return string of timestamp
@@ -57,7 +73,7 @@ class ChatSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Chat
-        fields = ('uuid', 'name', 'participants', 'messages', 'timestamp')
+        fields = '__all__'
         read_only = ('uuid',)
 
     def create(self, validated_data):
@@ -82,7 +98,7 @@ class ChatDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Chat
-        fields = ('uuid', 'name', 'participants', 'messages')
+        fields = '__all__'
         read_only = ('uuid',)
 
     #Todo Make it possible to add new participants and remove yourself

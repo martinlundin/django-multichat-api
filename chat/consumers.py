@@ -3,7 +3,7 @@ from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 import json
 from .models import Message, Content, get_chat_by_id, is_participant_in_chat
-from .serializers import get_latest_messages
+from .serializers import get_latest_messages, save_message
 
 User = get_user_model()
 
@@ -59,17 +59,10 @@ class ChatConsumer(WebsocketConsumer):
         return result
 
     def send_message(self, data):
-        content = Content.objects.create(text=data['content'])
-        message = Message.objects.create(
-            sender=get_current_user(self),
-            content=content
-        )
-        current_chat = get_current_chat(self)
-        current_chat.messages.add(message)
-        current_chat.save()
+        message = save_message(get_current_user(self), get_current_chat(self), data)
         content = {
             'command': 'send_message',
-            'message': self.message_to_json(message)
+            'message': message
         }
         return self.send_chat_message(content)
 

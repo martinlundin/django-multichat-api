@@ -64,13 +64,13 @@ class ChatConsumer(WebsocketConsumer):
             'command': 'send_message',
             'message': message
         }
-        return self.send_chat_message(content)
+        return self.send_to_channel_layer(content)
 
-    def send_chat_message(self, message):
+    def send_to_channel_layer(self, message):
         async_to_sync(self.channel_layer.group_send)(
             self.room_group_name,
             {
-                'type': 'chat_message',
+                'type': 'send_to_browser_event',
                 'message': message
             }
         )
@@ -78,7 +78,7 @@ class ChatConsumer(WebsocketConsumer):
     def send_to_browser(self, message):
         self.send(text_data=json.dumps(message))
 
-    def chat_message(self, event):
+    def send_to_browser_event(self, event):
         message = event['message']
         self.send(text_data=json.dumps(message))
 

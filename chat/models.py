@@ -2,7 +2,7 @@ from django.shortcuts import get_object_or_404
 from django.db import models
 import uuid as makeuuid
 from users.models import Usern
-import datetime
+import time
 
 
 def get_chat_by_id(chatid):
@@ -16,12 +16,12 @@ def is_participant_in_chat(chatid, userid):
 
 class Message(models.Model):
     sender = models.ForeignKey(Usern, related_name='sender', on_delete=models.CASCADE)
-    timestamp = models.DateTimeField(auto_now_add=True)
+    timestamp = models.IntegerField("timestamp", editable=False, default=time.time)
     text = models.TextField()
     giphy = models.CharField(max_length=300, null=True)
 
     def __str__(self):
-        return str(self.content)
+        return str(self.text)
 
 
 class Chat(models.Model):
@@ -29,10 +29,10 @@ class Chat(models.Model):
     name = models.CharField(max_length=50, null=True)
     participants = models.ManyToManyField(Usern, related_name='participants')
     messages = models.ManyToManyField(Message, null=True)
-    timestamp = models.DateTimeField("timestamp", editable=False, default=datetime.datetime.now())
+    timestamp = models.IntegerField("timestamp", editable=False, default=time.time)
 
     def save(self, *args, **kw):
-        self.timestamp = datetime.datetime.now()
+        self.timestamp = time.time()
         if "timestamp" in kw:
             kw["timestamp"].append("timestamp")
         super(Chat, self).save(*args, **kw)

@@ -15,8 +15,8 @@ def get_latest_messages(chatid, from_message=0, to_message=20):
 def save_message(sender, chat, data):
     message = Message.objects.create(
         sender=sender,
-        text=data['content'].get('text', ""),
-        giphy=data['content'].get('giphy', ""),
+        text=data['content'].get('text', None),
+        giphy=data['content'].get('giphy', None),
     )
     chat.messages.add(message)
     chat.save()

@@ -42,15 +42,20 @@ class ChatSerializer(serializers.ModelSerializer):
         read_only = ('uuid',)
 
     def create(self, validated_data):
-        participants = validated_data.pop('participants')
         auth_user = self.context['request'].user
 
-        #Todo also check if chat with participants already exists
+        participants = validated_data.pop('participants')
+        name = validated_data.pop('name')
+
         if auth_user in participants:
             chat = Chat()
             chat.save()
+
             for user in participants:
                 chat.participants.add(user)
+
+            chat.name = name
+
             chat.save()
             return chat
         else:

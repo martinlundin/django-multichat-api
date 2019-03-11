@@ -26,9 +26,9 @@ class Message(models.Model):
 
 class Chat(models.Model):
     uuid = models.UUIDField(primary_key=True, default=makeuuid.uuid4, editable=False)
-    name = models.CharField(max_length=50, blank=True)
+    name = models.CharField(max_length=50, null=True)
     participants = models.ManyToManyField(Usern, related_name='participants')
-    messages = models.ManyToManyField(Message, blank=True)
+    messages = models.ManyToManyField(Message, null=True)
     timestamp = models.DateTimeField("timestamp", editable=False, default=datetime.datetime.now())
 
     def save(self, *args, **kw):

@@ -14,8 +14,8 @@ class UsernSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     class Meta:
         model = models.Usern
-        fields = ('uuid', 'username', 'name', 'image')
-        read_only_fields = ('uuid', 'username')
+        fields = ('uuid', 'name', 'image')
+        read_only_fields = ('uuid',)
 
     def update(self, instance, validated_data):
         instance.image = validated_data.pop('image')

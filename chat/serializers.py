@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
-from chat.models import Chat, Message, Content
+from chat.models import Chat, Message
 from users.serializers import ChatUsernSerializer
+from users.models import Usern
 from django.shortcuts import get_object_or_404
 
 
@@ -12,13 +13,10 @@ def get_latest_messages(chatid, from_message=0, to_message=20):
 
 
 def save_message(sender, chat, data):
-    content = Content.objects.create(
-        text=data['content'].get('text', ""),
-        giphy=data['content'].get('giphy', ""),
-    )
     message = Message.objects.create(
         sender=sender,
-        content=content
+        text=data['content'].get('text', ""),
+        giphy=data['content'].get('giphy', ""),
     )
     chat.messages.add(message)
     chat.save()
@@ -26,54 +24,21 @@ def save_message(sender, chat, data):
     return MessageSerializer(message).data
 
 
-def get_latest_timestamp(chatid):
-    chat = get_object_or_404(Chat, uuid=chatid)
-    qs = chat.messages.order_by('-timestamp').all()[:1]
-    return TimestampSerializer(qs, many=True, read_only=True).data
-
-
-class ContentSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Content
-        fields = '__all__'
-
-
 class MessageSerializer(serializers.ModelSerializer):
-    sender = ChatUsernSerializer(read_only=True)
-    content = ContentSerializer(read_only=True)
-
     class Meta:
         model = Message
         fields = '__all__'
-
-    def create(self, validated_data):
-        """
-        Create and return a new `Snippet` instance, given the validated data.
-        """
-        print("asd")
-        return Message.objects.create(**validated_data)
-
-class TimestampSerializer(serializers.ModelSerializer):
-    #Todo make this not stupid, it should return string of timestamp
-    class Meta:
-        model = Message
-        fields = ('timestamp',)
 
 
 class ChatSerializer(serializers.ModelSerializer):
-    participants = ChatUsernSerializer(many=True, read_only=True)
     messages = serializers.SerializerMethodField()
-    timestamp = serializers.SerializerMethodField()
 
     def get_messages(self, chat):
-        return get_latest_messages(chat.uuid)
-
-    def get_timestamp(self, chat):
-        return get_latest_timestamp(chat.uuid)
+        return get_latest_messages(chat.uuid, 0, 1)
 
     class Meta:
         model = Chat
-        fields = '__all__'
+        fields = ('uuid', 'name', 'participants', 'messages', 'timestamp')
         read_only = ('uuid',)
 
     def create(self, validated_data):

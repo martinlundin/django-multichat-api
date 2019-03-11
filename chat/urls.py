@@ -6,6 +6,6 @@ from . import views
 app_name = 'chat'
 
 urlpatterns = [
-    path('', views.ChatListView.as_view()),
+    path('', views.ChatListCreateView.as_view()),
     path('<pk>', views.ChatDetailView.as_view()),
 ]

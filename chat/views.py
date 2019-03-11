@@ -15,13 +15,13 @@ class IsParticipant(permissions.BasePermission):
             return False
 
 
-class ChatListView(generics.ListCreateAPIView):
+class ChatListCreateView(generics.ListCreateAPIView):
     serializer_class = ChatSerializer
     permission_classes = (permissions.IsAuthenticated,)
 
     def get_queryset(self):
         uuid = self.request.user
-        queryset = uuid.chats.all()
+        queryset = uuid.participants.order_by('-timestamp').all()
         return queryset
 
 

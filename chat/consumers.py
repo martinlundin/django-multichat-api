@@ -2,7 +2,7 @@ from django.contrib.auth import get_user_model
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 import json
-from .models import Message, Content, get_chat_by_id, is_participant_in_chat
+from .models import Message, get_chat_by_id, is_participant_in_chat
 from .serializers import get_latest_messages, save_message
 
 User = get_user_model()

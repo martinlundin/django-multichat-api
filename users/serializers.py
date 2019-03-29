@@ -18,8 +18,10 @@ class UsernSerializer(serializers.ModelSerializer):
         read_only_fields = ('uuid',)
 
     def update(self, instance, validated_data):
-        instance.image = validated_data.pop('image')
-        instance.name = validated_data.pop('name')
+        if validated_data['image']:
+            instance.image = validated_data.pop('image')
+        if validated_data['name']:
+            instance.name = validated_data.pop('name')
         instance.save()
         return instance
 

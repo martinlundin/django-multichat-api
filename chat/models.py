@@ -36,7 +36,7 @@ class Chat(models.Model):
     name = models.CharField(max_length=50, null=True, blank=True)
     image = models.ImageField(upload_to=get_image_path, null=True, default=None, blank=True)
     participants = models.ManyToManyField(Usern, related_name='participants')
-    messages = models.ManyToManyField(Message, null=True)
+    messages = models.ManyToManyField(Message)
     timestamp = models.IntegerField("timestamp", editable=False, default=time.time)
 
     def save(self, *args, **kw):

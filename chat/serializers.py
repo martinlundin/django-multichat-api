@@ -39,7 +39,7 @@ class ChatSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Chat
-        fields = ('uuid', 'name', 'participants', 'messages', 'timestamp')
+        fields = ('uuid', 'name', 'image', 'participants', 'messages', 'timestamp')
         read_only = ('uuid',)
 
     def create(self, validated_data):

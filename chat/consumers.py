@@ -1,11 +1,8 @@
-from django.contrib.auth import get_user_model
 from asgiref.sync import async_to_sync
 from channels.generic.websocket import WebsocketConsumer
 import json
 from .models import Message, get_chat_by_id, is_participant_in_chat
 from .serializers import get_latest_messages, save_message
-
-User = get_user_model()
 
 
 def get_current_chatid(self):
@@ -44,14 +41,6 @@ class ChatConsumer(WebsocketConsumer):
         data = json.loads(text_data)
         self.commands[data['command']](self, data)
 
-    def get_messages(self, data):
-        messages = get_latest_messages(get_current_chatid(self), data['fromMessage'], data['toMessage'])
-        content = {
-            'command': 'return_messages',
-            'messages': self.return_messages(messages)
-        }
-        self.send_to_browser(content)
-
     def return_messages(self, messages):
         result = []
         for message in messages:
@@ -62,6 +51,7 @@ class ChatConsumer(WebsocketConsumer):
         message = save_message(get_current_user(self), get_current_chat(self), data)
         content = {
             'command': 'send_message',
+            'chatid': get_current_chatid(self),
             'message': message
         }
         return self.send_to_channel_layer(content)
@@ -83,7 +73,6 @@ class ChatConsumer(WebsocketConsumer):
         self.send(text_data=json.dumps(message))
 
     commands = {
-        'get_messages': get_messages,
         'send_message': send_message
     }
 

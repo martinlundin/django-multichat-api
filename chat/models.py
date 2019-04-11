@@ -20,6 +20,9 @@ class Message(models.Model):
     text = models.TextField()
     giphy = models.CharField(max_length=300, null=True)
 
+    def message_sender(self):
+        return str(self.sender)
+
     def __str__(self):
         return str(self.text)
 

@@ -15,8 +15,8 @@ def get_latest_messages(chatid, from_message=0, to_message=20):
 def save_message(sender, chat, data):
     message = Message.objects.create(
         sender=sender,
-        text=data['content'].get('text', None),
-        giphy=data['content'].get('giphy', None),
+        text=data['message'].get('text', None),
+        giphy=data['message'].get('giphy', None),
     )
     chat.messages.add(message)
     chat.save()
@@ -27,14 +27,15 @@ def save_message(sender, chat, data):
 class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
-        fields = '__all__'
+        fields = ('message_sender', 'timestamp', 'text', 'giphy')
+        read_only = ('message_sender',)
 
 
 class ChatSerializer(serializers.ModelSerializer):
     messages = serializers.SerializerMethodField()
 
     def get_messages(self, chat):
-        return get_latest_messages(chat.uuid, 0, 1)
+        return get_latest_messages(chat.uuid, 0, 20)
 
     class Meta:
         model = Chat

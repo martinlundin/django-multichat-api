@@ -3,7 +3,7 @@ from channels.generic.websocket import WebsocketConsumer
 import json
 from .models import Message, get_chat_by_id, is_participant_in_chat
 from .serializers import get_latest_messages, save_message
-
+from users.models import Usern
 
 def get_current_chatid(self):
     return self.scope['url_route']['kwargs']['chatid']
@@ -21,6 +21,12 @@ def get_current_user(self):
 def get_current_userid(self):
     return self.scope['user'].uuid
 
+def user_is_online(userid):
+    Usern.objects.filter(uuid=userid).update(online=True)
+
+def user_is_offline(userid):
+    Usern.objects.filter(uuid=userid).update(online=False)
+
 
 class ChatConsumer(WebsocketConsumer):
 
@@ -34,6 +40,7 @@ class ChatConsumer(WebsocketConsumer):
                 self.channel_name
             )
             self.accept(self.scope['subprotocols'][0]) #Because authentication is in subprotocol, we need to user value as parameter
+            user_is_online(get_current_userid(self))
         else:
             self.close()
 
@@ -77,6 +84,7 @@ class ChatConsumer(WebsocketConsumer):
     }
 
     def disconnect(self, close_code):
+        user_is_offline(get_current_userid(self))
         async_to_sync(self.channel_layer.group_discard)(
             self.room_group_name,
             self.channel_name

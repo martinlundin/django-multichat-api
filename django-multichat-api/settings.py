@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'users',
     'chat',
     'channels',
+    'fcm_django',
 ]
 
 MIDDLEWARE = [
@@ -82,7 +83,7 @@ TEMPLATES = [
 WSGI_APPLICATION = 'django-multichat-api.wsgi.application'
 ASGI_APPLICATION = "django-multichat-api.routing.application"
 
-#Redis channel layer for 'channels'
+# Redis channel layer for 'channels'
 CHANNEL_LAYERS = {
     'default': {
         'BACKEND': 'channels_redis.core.RedisChannelLayer',
@@ -151,7 +152,6 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ),
 
-
 }
 
 # Add serializer for rest-auth
@@ -183,3 +183,10 @@ ACCOUNT_EMAIL_VERIFICATION = 'none'
 # Media
 MEDIA_ROOT = os.path.join(BASE_DIR, "uploads")
 MEDIA_URL = "/uploads/"
+
+# Notifications
+FCM_DJANGO_SETTINGS = {
+    "FCM_SERVER_KEY": "AAAAfNIhXco:APA91bHvgbsWHJVJkLJQ-SuHu7ZlteLwx_Ibm-ChnAImev3pLM61lmoyVsNq6b50Vse6OCbQ1c2ZGK_GKF9Htx_SO8y3M6oTVSU79vYQhd6pX4sMz5eZWankbhBZQrlrySPZ6WS66on6",
+    "ONE_DEVICE_PER_USER": True,
+    "DELETE_INACTIVE_DEVICES": True,
+}

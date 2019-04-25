@@ -4,10 +4,12 @@ import json
 from .models import Message, get_chat_by_id, is_participant_in_chat
 from .serializers import get_latest_messages, save_message
 from users.models import Usern
+from fcm_django.models import FCMDevice
+
+
 
 def get_current_chatid(self):
     return self.scope['url_route']['kwargs']['chatid']
-
 
 def get_current_chat(self):
     chatid = get_current_chatid(self)
@@ -61,6 +63,14 @@ class ChatConsumer(WebsocketConsumer):
             'chatid': get_current_chatid(self),
             'message': message
         }
+
+        #All participants that are offline get pushnotifications
+        participants_offline = get_current_chat(self).participants.filter(online=False)
+        for participant in participants_offline:
+            device = FCMDevice.objects.filter(user=participant).first()
+            if device:
+                device.send_message(get_current_user(self).name, message["text"])
+
         return self.send_to_channel_layer(content)
 
     def send_to_channel_layer(self, message):
